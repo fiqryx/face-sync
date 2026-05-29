@@ -1,15 +1,11 @@
 version: "3.8"
 
 services:
-  # =====================================================================
-  # 1. Container Utama Aplikasi (Go API, Worker, Updater, Next.js)
-  # =====================================================================
   app-server:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: facesync_app
-    # Menggunakan network host agar semua biner bisa membaca localhost:8000 dan localhost:8554
     network_mode: "host"
     environment:
       - DB_HOST=127.0.0.1
@@ -17,27 +13,7 @@ services:
       - REDIS_HOST=127.0.0.1
       - PORT=8000
 
-    # devices:
-    #   - "/dev/kfd:/dev/kfd?" # Tanda tanya (?) di akhir membuat device ini OPSIONAL
-    #   - "/dev/dri:/dev/dri?" # Jika tidak ada Intel/AMD, Docker akan mengabaikannya
-
-    # group_add:
-    #   - video
-    #   - render
-
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
-    #           options:
-    #             required: false
-
     volumes:
-      # Volume mapping wajib agar file biner baru hasil tindihan 'backend-updater'
-      # tersimpan permanen di folder hos dan tidak hilang saat container restart
       - ./app-bin:/app/bin
       - ./storage:/app/storage
       - flag_data:/app/flag
@@ -47,9 +23,6 @@ services:
       - mediamtx-stream
     restart: always
 
-  # =====================================================================
-  # 2. MediaMTX Server (RTSP Streamer untuk main.bin)
-  # =====================================================================
   mediamtx-stream:
     image: bluenviron/mediamtx:latest
     container_name: facesync_mediamtx
@@ -60,9 +33,6 @@ services:
       - MTX_WEBRTC=yes
     restart: always
 
-  # =====================================================================
-  # 3. PostgreSQL Database
-  # =====================================================================
   postgres-db:
     image: postgres:15-alpine
     container_name: facesync_postgres
@@ -72,7 +42,6 @@ services:
       - POSTGRES_PASSWORD=secretpassword
       - POSTGRES_DB=facesync_db
     volumes:
-      # Menyimpan data database di server hos agar data tidak hilang saat kontainer mati
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
@@ -84,11 +53,9 @@ services:
     container_name: facesync_redis
     network_mode: "host"
     volumes:
-      # Menyimpan data cache di server hos
       - redis_data:/data
     restart: always
 
-# Define volumes untuk persistent data DB dan Redis
 volumes:
   postgres_data:
   redis_data:
