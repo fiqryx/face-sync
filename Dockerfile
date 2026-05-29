@@ -19,22 +19,44 @@ FROM alpine:latest AS downloader
 RUN apk add --no-cache curl jq
 
 WORKDIR /download
+
+ENV LOCAL=true
 ENV JSON_URL="https://raw.githubusercontent.com/fiqryx/face-sync-updater/main/version.json"
 
-RUN curl -s "$JSON_URL" > version.json \
-    && mkdir -p backend_out worker_out webui_out \
+COPY version.json .
+COPY ./build/ ./build/
 
-    && BACKEND_URL=$(jq -r '.backend.download_url' version.json) \
-    && curl -L "$BACKEND_URL" | tar -xz -C ./backend_out \
-
-    && WORKER_URL=$(jq -r '.worker.download_url' version.json) \
-    && curl -L "$WORKER_URL" | tar -xz -C ./worker_out \
-
-    && UPDATER_URL=$(jq -r '.updater.download_url' version.json) \
-    && curl -L "$UPDATER_URL" | tar -xz -C ./backend_out \
-
-    && WEBUI_URL=$(jq -r '.webui.download_url' version.json) \
-    && curl -L "$WEBUI_URL" | tar -xz -C ./webui_out
+RUN mkdir -p backend_out worker_out webui_out && \
+    if [ "$LOCAL" = "true" ]; then \
+    echo "LOG: LOCAL mode is enabled. Extracting filenames from local ./build/ directory..."; \
+    \
+    # Read from LOCAL version.json
+    BACKEND_FILE=$(basename "$(jq -r '.backend.download_url' version.json)") && \
+    WORKER_FILE=$(basename "$(jq -r '.worker.download_url' version.json)") && \
+    UPDATER_FILE=$(basename "$(jq -r '.updater.download_url' version.json)") && \
+    WEBUI_FILE=$(basename "$(jq -r '.webui.download_url' version.json)") && \
+    \
+    tar -xzf "./build/$BACKEND_FILE" -C ./backend_out && \
+    tar -xzf "./build/$WORKER_FILE" -C ./worker_out && \
+    tar -xzf "./build/$UPDATER_FILE" -C ./backend_out && \
+    tar -xzf "./build/$WEBUI_FILE" -C ./webui_out; \
+    else \
+    # Fetch the LATEST json from remote first
+    curl -s "$JSON_URL" > version.json && \
+    \
+    # Read the LATEST URLs from the freshly downloaded json
+    BACKEND_URL=$(jq -r '.backend.download_url' version.json) && \
+    WORKER_URL=$(jq -r '.worker.download_url' version.json) && \
+    UPDATER_URL=$(jq -r '.updater.download_url' version.json) && \
+    WEBUI_URL=$(jq -r '.webui.download_url' version.json) && \
+    \
+    curl -L "$BACKEND_URL" | tar -xz -C ./backend_out && \
+    curl -L "$WORKER_URL" | tar -xz -C ./worker_out && \
+    curl -L "$UPDATER_URL" | tar -xz -C ./backend_out && \
+    curl -L "$WEBUI_URL" | tar -xz -C ./webui_out; \
+    fi && \
+    # Cleanup local build directory to keep image size small
+    rm -rf ./build
 
 FROM python:3.12-slim
 WORKDIR /app
@@ -59,7 +81,7 @@ COPY ./local_version.json ./version.json
 
 COPY --from=downloader /download/backend_out/ .
 COPY --from=downloader /download/worker_out/ .
-COPY --from=downloader /download/webui_out/webui ./webui
+COPY --from=downloader /download/webui_out/ ./webui
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh .

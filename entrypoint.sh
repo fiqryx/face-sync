@@ -14,6 +14,7 @@ echo "[BOOT] Running database migrations..."
 FLAG_FILE="/app/flag/seeded.flag"
 
 if [ ! -f "$FLAG_FILE" ]; then
+    ./backend generate:key
     echo "[BOOT] [FIRST RUN] Fresh environment detected. Running full database seeding..."
     ./backend db:seed
     touch "$FLAG_FILE"
