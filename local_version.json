@@ -1,5 +1,6 @@
 {
-  "backend": "v1.0.0",
-  "webui": "v1.0.0",
-  "worker": "v1.0.0"
+  "backend": "1.0.0",
+  "webui": "1.0.0",
+  "worker": "1.0.0",
+  "updater": "1.0.0"
 }

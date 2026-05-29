@@ -17,17 +17,7 @@ The main Go Updater application running on the production server periodically re
    git clone <repo-url>
    ```
  
-2. Download binary on **Releases** page, extract, and move all to folder `bin/`:
-   ```
-   bin/
-   ├── models/
-   ├── backend
-   ├── main.bin
-   ├── updater
-   └── webui/
-   ```
- 
-3. Run with Docker Compose:
+2. Run with Docker Compose:
    ```bash
    docker-compose up --build -d
    ```

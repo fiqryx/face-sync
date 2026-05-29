@@ -55,7 +55,7 @@ COPY --from=piper-builder /app/dist/piper_tts-*linux*.whl ./dist/
 RUN pip3 install ./dist/piper_tts-*linux*.whl && rm -rf ./dist
 
 COPY .env .
-COPY .local_version.json ./version.json
+COPY ./local_version.json ./version.json
 
 COPY --from=downloader /download/backend_out/ .
 COPY --from=downloader /download/worker_out/ .
