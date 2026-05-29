@@ -4,8 +4,7 @@ temp_updates/
 app-bin/
 storage/
 models/
-converted_releases/
-# bin/
+build/
 .env
 *.bin
 backend

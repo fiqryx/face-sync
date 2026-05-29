@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+CWD=$(pwd)
+TARGET_DIR="../face-sync"
+BUILD_DIR="$CWD/build"
+VERSION_JSON="$CWD/version.json"
+
+echo "🚀 [START] Starting Automated Dynamic Build & Packing Process..."
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "❌ Error: Target directory '$TARGET_DIR' not found!"
+    echo "Please verify that the relative path '../face-synce' exists."
+    exit 1
+fi
+
+if [ ! -f "$VERSION_JSON" ]; then
+    echo "❌ Error: File version.json not found at $VERSION_JSON!"
+    exit 1
+fi
+
+# Dynamically parse "version": "x.x.x" using pure Bash grep + sed (cross-platform friendly)
+BACKEND_VER=$(grep -o '"version": "[^"]*' "$VERSION_JSON" | head -n 1 | sed 's/"version": "//')
+
+if [ -z "$BACKEND_VER" ]; then
+    echo "⚠️  Warning: Failed to detect version from JSON. Falling back to default: 1.0.0"
+    BACKEND_VER="1.0.0"
+else
+    echo "🏷️  Successfully detected project version: v$BACKEND_VER"
+fi
+
+# Clean up any existing build directory and create a fresh one
+rm -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
+
+echo "📦 [1/4] Processing Backend..."
+cd "$TARGET_DIR/backend"
+
+echo "🛠️  Compiling Go binary for Linux AMD64..."
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o backend main.go
+
+echo "🤐 Compressing Backend to .tar.gz..."
+tar -czf "$BUILD_DIR/backend_${BACKEND_VER}_linux_amd64.tar.gz" backend
+
+# Clean up the local temporary binary after packing
+rm backend
+echo "✅ Backend successfully compressed."
+
+echo "📦 [2/4] Processing Worker..."
+cd "$CWD"
+cd "$TARGET_DIR/worker"
+
+echo "🤐 Compressing Worker binary & Models folder to .tar.gz..."
+tar -czf "$BUILD_DIR/worker_${BACKEND_VER}_linux_amd64.tar.gz" main.bin models
+echo "✅ Worker successfully compressed."
+
+echo "📦 [3/4] Processing Updater..."
+cd "$CWD"
+cd "$TARGET_DIR/updater"
+
+echo "🛠️  Compiling Updater binary for Linux AMD64..."
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o updater main.go
+
+echo "🤐 Compressing Updater to .tar.gz..."
+tar -czf "$BUILD_DIR/updater_${BACKEND_VER}_linux_amd64.tar.gz" updater
+
+# Clean up the local temporary binary after packing
+rm updater
+echo "✅ Updater successfully compressed."
+
+echo "📦 [4/4] Processing WebUI..."
+cd "$CWD"
+cd "$TARGET_DIR/web-ui"
+
+echo "🛠️  Running Next.js production build in standalone mode..."
+npm run build
+
+echo "📁 Injecting required static assets directly into the standalone directory..."
+# Inject static assets into the standalone directory structure
+if [ -d ".next/static" ]; then
+    mkdir -p .next/standalone/.next
+    cp -r .next/static .next/standalone/.next/
+fi
+
+if [ -d "public" ]; then
+    cp -r public .next/standalone/
+fi
+
+# Navigate directly into the built standalone directory for isolated compression
+cd .next/standalone
+
+echo "🤐 Compressing WebUI Complete Standalone structure to .tar.gz..."
+tar -czf "$BUILD_DIR/webui_${BACKEND_VER}_linux_amd64.tar.gz" .
+
+# Return to the initial working directory
+cd "$CWD"
+echo "✅ WebUI successfully compressed."
+
+# =====================================================================
+# FINISHING
+# =====================================================================
+echo "--------------------------------------------------------"
+echo "🏁 [SUCCESS] Full dynamic build and packing complete!"
+echo "📂 All 4 artifacts located in: $BUILD_DIR"
+echo "--------------------------------------------------------"
+ls -lh "$BUILD_DIR"
