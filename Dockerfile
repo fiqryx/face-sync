@@ -24,24 +24,39 @@ ENV LOCAL=true
 ENV JSON_URL="https://raw.githubusercontent.com/fiqryx/face-sync-updater/main/version.json"
 
 COPY version.json .
-COPY ./build/ ./build/
+COPY build* ./build/
 
 RUN mkdir -p backend_out worker_out webui_out && \
-    if [ "$LOCAL" = "true" ]; then \
-    echo "LOG: LOCAL mode is enabled. Extracting filenames from local ./build/ directory..."; \
+    FETCH_FROM_REMOTE="false" && \
     \
-    # Read from LOCAL version.json
+    if [ "$LOCAL" = "true" ]; then \
+    echo "LOG: LOCAL mode is enabled. Checking local ./build/ directory..."; \
+    \
     BACKEND_FILE=$(basename "$(jq -r '.backend.download_url' version.json)") && \
     WORKER_FILE=$(basename "$(jq -r '.worker.download_url' version.json)") && \
     UPDATER_FILE=$(basename "$(jq -r '.updater.download_url' version.json)") && \
     WEBUI_FILE=$(basename "$(jq -r '.webui.download_url' version.json)") && \
     \
+    if [ -f "./build/$BACKEND_FILE" ] && \
+    [ -f "./build/$WORKER_FILE" ] && \
+    [ -f "./build/$UPDATER_FILE" ] && \
+    [ -f "./build/$WEBUI_FILE" ]; then \
+    \
+    echo "LOG: All local files found. Extracting from ./build/..." && \
     tar -xzf "./build/$BACKEND_FILE" -C ./backend_out && \
     tar -xzf "./build/$WORKER_FILE" -C ./worker_out && \
     tar -xzf "./build/$UPDATER_FILE" -C ./backend_out && \
     tar -xzf "./build/$WEBUI_FILE" -C ./webui_out; \
     else \
-    # Fetch the LATEST json from remote first
+    echo "LOG: Some .tar.gz files are missing in ./build/. Falling back to remote download..."; \
+    FETCH_FROM_REMOTE="true"; \
+    fi; \
+    else \
+    FETCH_FROM_REMOTE="true"; \
+    fi && \
+    \
+    if [ "$FETCH_FROM_REMOTE" = "true" ]; then \
+    echo "LOG: Fetching files from remote URL..."; \
     curl -s "$JSON_URL" > version.json && \
     \
     # Read the LATEST URLs from the freshly downloaded json
@@ -55,6 +70,7 @@ RUN mkdir -p backend_out worker_out webui_out && \
     curl -L "$UPDATER_URL" | tar -xz -C ./backend_out && \
     curl -L "$WEBUI_URL" | tar -xz -C ./webui_out; \
     fi && \
+    \
     # Cleanup local build directory to keep image size small
     rm -rf ./build
 

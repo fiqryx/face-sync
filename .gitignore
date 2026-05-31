@@ -11,3 +11,4 @@ backend
 webui/
 convert_release.sh
 *.old
+*.txt

@@ -4,14 +4,14 @@
 set -e
 
 CWD=$(pwd)
-TARGET_DIR="../face-sync"
+TARGET_DIR="../sources"
 BUILD_DIR="$CWD/build"
 VERSION_JSON="$CWD/version.json"
 
 echo "🚀 [START] Starting Automated Dynamic Build & Packing Process..."
 if [ ! -d "$TARGET_DIR" ]; then
     echo "❌ Error: Target directory '$TARGET_DIR' not found!"
-    echo "Please verify that the relative path '../face-synce' exists."
+    echo "Please verify that the relative path  exists."
     exit 1
 fi
 
@@ -21,7 +21,7 @@ if [ ! -f "$VERSION_JSON" ]; then
 fi
 
 # Dynamically parse "version": "x.x.x" using pure Bash grep + sed (cross-platform friendly)
-BACKEND_VER=$(grep -o '"version": "[^"]*' "$VERSION_JSON" | head -n 1 | sed 's/"version": "//')
+BACKEND_VER=$(jq -r '.backend.version' "$VERSION_JSON")
 
 if [ -z "$BACKEND_VER" ]; then
     echo "⚠️  Warning: Failed to detect version from JSON. Falling back to default: 1.0.0"
@@ -50,20 +50,22 @@ echo "✅ Backend successfully compressed."
 echo "📦 [2/4] Processing Worker..."
 cd "$CWD"
 cd "$TARGET_DIR/worker"
+WORKER_VER=$(jq -r '.worker.version' "$VERSION_JSON")
 
 echo "🤐 Compressing Worker binary & Models folder to .tar.gz..."
-tar -czf "$BUILD_DIR/worker_${BACKEND_VER}_linux_amd64.tar.gz" main.bin models
+tar -czf "$BUILD_DIR/worker_${WORKER_VER}_linux_amd64.tar.gz" main.bin models
 echo "✅ Worker successfully compressed."
 
 echo "📦 [3/4] Processing Updater..."
 cd "$CWD"
 cd "$TARGET_DIR/updater"
+UPDATER_VER=$(jq -r '.updater.version' "$VERSION_JSON")
 
 echo "🛠️  Compiling Updater binary for Linux AMD64..."
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o updater main.go
 
 echo "🤐 Compressing Updater to .tar.gz..."
-tar -czf "$BUILD_DIR/updater_${BACKEND_VER}_linux_amd64.tar.gz" updater
+tar -czf "$BUILD_DIR/updater_${UPDATER_VER}_linux_amd64.tar.gz" updater
 
 # Clean up the local temporary binary after packing
 rm updater
@@ -72,6 +74,7 @@ echo "✅ Updater successfully compressed."
 echo "📦 [4/4] Processing WebUI..."
 cd "$CWD"
 cd "$TARGET_DIR/web-ui"
+WEBUI_VER=$(jq -r '.webui.version' "$VERSION_JSON")
 
 echo "🛠️  Running Next.js production build in standalone mode..."
 npm run build
@@ -91,7 +94,7 @@ fi
 cd .next/standalone
 
 echo "🤐 Compressing WebUI Complete Standalone structure to .tar.gz..."
-tar -czf "$BUILD_DIR/webui_${BACKEND_VER}_linux_amd64.tar.gz" .
+tar -czf "$BUILD_DIR/webui_${WEBUI_VER}_linux_amd64.tar.gz" .
 
 # Return to the initial working directory
 cd "$CWD"
