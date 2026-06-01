@@ -15,8 +15,9 @@ services:
 
     volumes:
       - ./.env:/app/.env
+      - ./local_version.json:/app/version.json
       - ./app-bin:/app/bin
-      - ./storage:/app/storage
+      - ./storage:/storage
       - flag_data:/app/flag
     depends_on:
       postgres-db:

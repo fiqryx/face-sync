@@ -15,8 +15,8 @@
     "service_name": "updater"
   },
   "webui": {
-    "version": "1.0.1",
-    "download_url": "https://github.com/fiqryx/face-sync-app/releases/download/webui-v1.0.1/webui_1.0.1_linux_amd64.tar.gz",
+    "version": "1.0.2",
+    "download_url": "https://github.com/fiqryx/face-sync-app/releases/download/webui-v1.0.2/webui_1.0.2_linux_amd64.tar.gz",
     "service_name": "webui"
   }
 }
