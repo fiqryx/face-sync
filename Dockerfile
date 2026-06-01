@@ -90,7 +90,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=piper-builder /app/dist/piper_tts-*linux*.whl ./dist/
-RUN pip3 install ./dist/piper_tts-*linux*.whl && rm -rf ./dist
+RUN pip3 install ./dist/piper_tts-*linux*.whl flask && rm -rf ./dist
 
 COPY .env .
 COPY ./local_version.json ./version.json

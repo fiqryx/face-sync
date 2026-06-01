@@ -8,6 +8,13 @@ TARGET_DIR="../sources"
 BUILD_DIR="$CWD/build"
 VERSION_JSON="$CWD/version.json"
 
+case "$1" in
+    --cuda)     PARAM="cuda" ;;
+    --directml) PARAM="directml" ;;
+    --openvino) PARAM="openvino" ;;
+    --cpu|*)    PARAM="cpu" ;;
+esac
+
 echo "🚀 [START] Starting Automated Dynamic Build & Packing Process..."
 if [ ! -d "$TARGET_DIR" ]; then
     echo "❌ Error: Target directory '$TARGET_DIR' not found!"
@@ -41,7 +48,7 @@ echo "🛠️  Compiling Go binary for Linux AMD64..."
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o backend main.go
 
 echo "🤐 Compressing Backend to .tar.gz..."
-tar -czf "$BUILD_DIR/backend_${BACKEND_VER}_linux_amd64.tar.gz" backend
+tar -czf "$BUILD_DIR/backend_${BACKEND_VER}_linux_amd64.tar.gz" backend --transform 's|^./packages/models|models|' ./packages/models/
 
 # Clean up the local temporary binary after packing
 rm backend
@@ -53,7 +60,7 @@ cd "$TARGET_DIR/worker"
 WORKER_VER=$(jq -r '.worker.version' "$VERSION_JSON")
 
 echo "🤐 Compressing Worker binary & Models folder to .tar.gz..."
-tar -czf "$BUILD_DIR/worker_${WORKER_VER}_linux_amd64.tar.gz" main.bin models
+tar -czf "$BUILD_DIR/worker_${WORKER_VER}_${PARAM}_linux_amd64.tar.gz" main.bin models
 echo "✅ Worker successfully compressed."
 
 echo "📦 [3/4] Processing Updater..."
