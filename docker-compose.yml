@@ -19,9 +19,12 @@ services:
       - ./storage:/app/storage
       - flag_data:/app/flag
     depends_on:
-      - postgres-db
-      - redis-cache
-      - mediamtx-stream
+      postgres-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      mediamtx-stream:
+        condition: service_started
     restart: always
 
   mediamtx-stream:
@@ -44,6 +47,11 @@ services:
       - POSTGRES_DB=facesync_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U facesync -d facesync_db"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
     restart: always
 
   # =====================================================================
