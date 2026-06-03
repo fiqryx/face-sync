@@ -1,11 +1,9 @@
-version: "3.8"
-
 services:
-  app-server:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: facesync_app
+    container_name: face_sync
     network_mode: "host"
     environment:
       - DB_HOST=127.0.0.1
@@ -16,21 +14,20 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./local_version.json:/app/version.json
-      - ./app-bin:/app/bin
       - ./storage:/storage
       - flag_data:/app/flag
     depends_on:
-      postgres-db:
+      postgres:
         condition: service_healthy
-      redis-cache:
+      redis:
         condition: service_started
-      mediamtx-stream:
+      stream:
         condition: service_started
     restart: always
 
-  mediamtx-stream:
+  stream:
     image: bluenviron/mediamtx:latest
-    container_name: facesync_mediamtx
+    container_name: media_stream
     network_mode: "host"
     environment:
       - MTX_API=yes
@@ -38,9 +35,9 @@ services:
       - MTX_WEBRTC=yes
     restart: always
 
-  postgres-db:
+  postgres:
     image: postgres:15-alpine
-    container_name: facesync_postgres
+    container_name: postgres
     network_mode: "host"
     environment:
       - POSTGRES_USER=facesync
@@ -55,12 +52,9 @@ services:
       retries: 10
     restart: always
 
-  # =====================================================================
-  # 4. Redis Cache
-  # =====================================================================
-  redis-cache:
+  redis:
     image: redis:7-alpine
-    container_name: facesync_redis
+    container_name: redis_stream
     network_mode: "host"
     volumes:
       - redis_data:/data
