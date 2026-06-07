@@ -84,7 +84,7 @@ cd "$TARGET_DIR/web-ui"
 WEBUI_VER=$(jq -r '.webui.version' "$VERSION_JSON")
 
 echo "🛠️  Running Next.js production build in standalone mode..."
-npm run build
+bun run build
 
 echo "📁 Injecting required static assets directly into the standalone directory..."
 # Inject static assets into the standalone directory structure
