@@ -1,6 +1,3 @@
-# =====================================================================
-# STAGE 1: Pinjam Builder Resmi Milik Piper untuk Membuat Modul Python
-# =====================================================================
 FROM python:3.12 AS piper-builder
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
@@ -12,9 +9,6 @@ RUN script/setup --dev
 RUN script/dev_build
 RUN script/package
 
-# =====================================================================
-# STAGE 2: DOWNLOADER AUTOMATION (Streaming Extractor via Memory Pipe)
-# =====================================================================
 FROM alpine:latest AS downloader
 RUN apk add --no-cache curl jq
 

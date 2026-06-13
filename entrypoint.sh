@@ -3,18 +3,16 @@
 echo "[BOOT] Starting Face-Sync initialization..."
 sleep 3
 
-echo "[BOOT] Running database migrations..."
+echo "[BOOT] Sync database..."
 ./backend migrate
 
 FLAG_FILE="/app/flag/seeded.flag"
 if [ ! -f "$FLAG_FILE" ]; then
     ./backend generate:key
-    echo "[BOOT] [FIRST RUN] Fresh environment detected. Running full database seeding..."
+    echo "[BOOT] Fresh environment detected. Running setup environment..."
     ./backend db:seed
     touch "$FLAG_FILE"
-    echo "[BOOT] Seeding completed. Flag file created."
-else
-    echo "[BOOT] [REBOOT DETECTED] Server/Container just restarted. Skipping seeding safely..."
+    echo "[BOOT] Setup completed. Flag file created."
 fi
 
 echo "[BOOT] System is secure! Starting all services via Supervisor..."

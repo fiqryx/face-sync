@@ -9,6 +9,7 @@ build/
 *.bin
 backend
 webui/
+build.sh
 convert_release.sh
 *.old
 *.txt
