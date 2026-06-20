@@ -21,7 +21,7 @@
   },
   "launcher": {
     "version": "1.0.0",
-    "download_url": "",
+    "download_url": "https://github.com/fiqryx/face-sync/releases/download/launcher-v1.0.0/launcher_1.0.0_directml_windows_amd64.zip",
     "service_name": "launcher"
   }
 }
