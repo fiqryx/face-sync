@@ -1,22 +1,27 @@
 {
   "backend": {
-    "version": "1.1.0",
-    "download_url": "https://github.com/fiqryx/face-sync-app/releases/download/backend-v1.1.0/backend_1.1.0_linux_amd64.tar.gz",
+    "version": "1.2.0",
+    "download_url": "https://github.com/fiqryx/face-sync/releases/download/backend-v1.2.0/backend_1.2.0_linux_amd64.tar.gz",
     "service_name": "backend"
   },
   "worker": {
-    "version": "1.1.1",
-    "download_url": "https://github.com/fiqryx/face-sync-app/releases/download/worker-v1.1.1/worker_1.1.1_cpu_linux_amd64.tar.gz",
+    "version": "1.1.2",
+    "download_url": "https://github.com/fiqryx/face-sync/releases/download/worker-v1.1.2/worker_1.1.2_cpu_linux_amd64.tar.gz",
     "service_name": "worker"
   },
   "updater": {
-    "version": "1.2.0",
-    "download_url": "https://github.com/fiqryx/face-sync-app/releases/download/updater-v1.2.0/updater_1.2.0_linux_amd64.tar.gz",
+    "version": "1.3.0",
+    "download_url": "https://github.com/fiqryx/face-sync/releases/download/updater-v1.3.0/updater_1.3.0_linux_amd64.tar.gz",
     "service_name": "updater"
   },
   "webui": {
-    "version": "1.1.2",
-    "download_url": "https://github.com/fiqryx/face-sync-app/releases/download/webui-v1.1.2/webui_1.1.2_linux_amd64.tar.gz",
+    "version": "1.2.0",
+    "download_url": "https://github.com/fiqryx/face-sync/releases/download/webui-v1.2.0/webui_1.2.0_linux_amd64.tar.gz",
     "service_name": "webui"
+  },
+  "launcher": {
+    "version": "1.0.0",
+    "download_url": "",
+    "service_name": "launcher"
   }
 }

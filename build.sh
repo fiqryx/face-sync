@@ -69,7 +69,7 @@ cd "$TARGET_DIR/updater"
 UPDATER_VER=$(jq -r '.updater.version' "$VERSION_JSON")
 
 echo "🛠️  Compiling Updater binary for Linux AMD64..."
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o updater main.go
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o updater .
 
 echo "🤐 Compressing Updater to .tar.gz..."
 tar -czf "$BUILD_DIR/updater_${UPDATER_VER}_linux_amd64.tar.gz" updater
